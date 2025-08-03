@@ -1,0 +1,708 @@
+#!/bin/bash
+
+###
+### AWACS Package
+###
+### package_kismet_config
+###
+### 20250804-0100 NOT WORKING)
+###
+### Kismet Wireless Configuration Builder for Ubuntu 24.04 Server
+### This script creates the necessary configuration files for Kismet
+### Author: Generated for SDR/Wireless monitoring setup
+### Version: 1.0
+###
+
+set -e  # Exit on any error
+
+log "Running Kismet Config ..."
+
+cd $AWACS_SOURCE
+
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration variables
+KISMET_USER="kismet"
+KISMET_GROUP="kismet"
+KISMET_HOME="/etc/kismet"
+KISMET_LOG_DIR="/var/log/kismet"
+KISMET_DATA_DIR="/var/lib/kismet"
+WEB_PORT="2501"
+WEB_BIND="0.0.0.0"
+WEB_USER="admin"
+
+# Function to print colored output
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Function to check if running as root
+check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        print_error "This script must be run as root"
+        exit 1
+    fi
+}
+
+# Arrays to store detected devices
+declare -a DETECTED_DEVICES
+declare -a SELECTED_DEVICES
+
+# Function to detect SDR and wireless security devices
+detect_sdr_devices() {
+    print_status "Detecting SDR and wireless security devices..."
+    
+    DETECTED_DEVICES=()
+    
+    # Check for RTLSDR
+    if lsusb | grep -q "RTL2838\|0bda:2838\|0bda:2832"; then
+        DETECTED_DEVICES+=("RTLSDR")
+        print_success "Found RTLSDR device"
+    fi
+    
+    # Check for HackRF
+    if lsusb | grep -q "1d50:6089\|HackRF"; then
+        DETECTED_DEVICES+=("HackRF")
+        print_success "Found HackRF device"
+    fi
+    
+    # Check for RSP (SDRplay)
+    if lsusb | grep -q "1df7:\|SDRplay"; then
+        DETECTED_DEVICES+=("RSP")
+        print_success "Found SDRplay RSP device"
+    fi
+    
+    # Check for Ettus USRP
+    if lsusb | grep -q "2500:\|fffe:0002\|Ettus"; then
+        DETECTED_DEVICES+=("Ettus")
+        print_success "Found Ettus USRP device"
+    fi
+    
+    # Check for BladeRF
+    if lsusb | grep -q "2cf0:5246\|1d50:6066\|BladeRF"; then
+        DETECTED_DEVICES+=("BladeRF")
+        print_success "Found BladeRF device"
+    fi
+    
+    # Check for KerberosSDR
+    if lsusb | grep -q "16c0:05dc" && lsusb | grep -c "16c0:05dc" | grep -q "4"; then
+        DETECTED_DEVICES+=("KerberosSDR")
+        print_success "Found KerberosSDR (4x RTL dongles)"
+    fi
+    
+    # Check for LimeSDR
+    if lsusb | grep -q "1d50:6108\|0403:601f\|LimeSDR"; then
+        DETECTED_DEVICES+=("LimeSDR")
+        print_success "Found LimeSDR device"
+    fi
+    
+    # Check for WiFi Pineapple Nano (by USB ID)
+    if lsusb | grep -q "0e8d:7612\|148f:761a"; then
+        DETECTED_DEVICES+=("PineappleNano")
+        print_success "Found WiFi Pineapple Nano"
+    fi
+    
+    # Check for Ubertooth
+    if lsusb | grep -q "1d50:6002\|1d50:6000\|Ubertooth"; then
+        DETECTED_DEVICES+=("Ubertooth")
+        print_success "Found Ubertooth device"
+    fi
+    
+    if [ ${#DETECTED_DEVICES[@]} -eq 0 ]; then
+        print_warning "No SDR/wireless security devices auto-detected"
+        print_status "You can still manually configure devices later"
+    fi
+}
+
+# Function to detect available wireless interfaces
+detect_interfaces() {
+    print_status "Detecting wireless interfaces..."
+    
+    # Get wireless interfaces
+    WIRELESS_INTERFACES=$(iw dev | grep Interface | awk '{print $2}' | tr '\n' ' ')
+    
+    if [ -z "$WIRELESS_INTERFACES" ]; then
+        print_warning "No wireless interfaces detected"
+        WIRELESS_INTERFACES="wlan0"
+    else
+        print_success "Found wireless interfaces: $WIRELESS_INTERFACES"
+    fi
+}
+
+# Function to prompt user for device selection
+select_devices() {
+    print_status "Device Selection Menu"
+    echo "======================================"
+    
+    # Show all possible devices with detection status
+    echo "Available device types:"
+    echo "  1) RTLSDR        $([ "${DETECTED_DEVICES[*]}" =~ "RTLSDR" ] && echo "[DETECTED]" || echo "[Manual]")"
+    echo "  2) HackRF        $([ "${DETECTED_DEVICES[*]}" =~ "HackRF" ] && echo "[DETECTED]" || echo "[Manual]")"
+    echo "  3) RSP (SDRplay) $([ "${DETECTED_DEVICES[*]}" =~ "RSP" ] && echo "[DETECTED]" || echo "[Manual]")"
+    echo "  4) Ettus USRP    $([ "${DETECTED_DEVICES[*]}" =~ "Ettus" ] && echo "[DETECTED]" || echo "[Manual]")"
+    echo "  5) BladeRF       $([ "${DETECTED_DEVICES[*]}" =~ "BladeRF" ] && echo "[DETECTED]" || echo "[Manual]")"
+    echo "  6) KerberosSDR   $([ "${DETECTED_DEVICES[*]}" =~ "KerberosSDR" ] && echo "[DETECTED]" || echo "[Manual]")"
+    echo "  7) LimeSDR       $([ "${DETECTED_DEVICES[*]}" =~ "LimeSDR" ] && echo "[DETECTED]" || echo "[Manual]")"
+    echo "  8) Pineapple Nano $([ "${DETECTED_DEVICES[*]}" =~ "PineappleNano" ] && echo "[DETECTED]" || echo "[Manual]")"
+    echo "  9) Ubertooth     $([ "${DETECTED_DEVICES[*]}" =~ "Ubertooth" ] && echo "[DETECTED]" || echo "[Manual]")"
+    echo " 10) None - Skip SDR configuration"
+    echo
+    
+    SELECTED_DEVICES=()
+    
+    while true; do
+        echo -n "Select devices to configure (comma-separated numbers, e.g., 1,2,5): "
+        read -r selection
+        
+        if [[ "$selection" == "10" ]]; then
+            print_warning "Skipping SDR device configuration"
+            break
+        fi
+        
+        # Parse comma-separated input
+        IFS=',' read -ra DEVICE_NUMS <<< "$selection"
+        for num in "${DEVICE_NUMS[@]}"; do
+            case $num in
+                1) SELECTED_DEVICES+=("RTLSDR") ;;
+                2) SELECTED_DEVICES+=("HackRF") ;;
+                3) SELECTED_DEVICES+=("RSP") ;;
+                4) SELECTED_DEVICES+=("Ettus") ;;
+                5) SELECTED_DEVICES+=("BladeRF") ;;
+                6) SELECTED_DEVICES+=("KerberosSDR") ;;
+                7) SELECTED_DEVICES+=("LimeSDR") ;;
+                8) SELECTED_DEVICES+=("PineappleNano") ;;
+                9) SELECTED_DEVICES+=("Ubertooth") ;;
+                *) print_warning "Invalid selection: $num" ;;
+            esac
+        done
+        
+        if [ ${#SELECTED_DEVICES[@]} -gt 0 ]; then
+            print_success "Selected devices: ${SELECTED_DEVICES[*]}"
+            break
+        else
+            print_error "No valid devices selected. Please try again."
+        fi
+    done
+}
+
+# Function to create kismet user and group
+create_user() {
+    print_status "Creating kismet user and group..."
+    
+    if ! getent group "$KISMET_GROUP" > /dev/null 2>&1; then
+        groupadd "$KISMET_GROUP"
+        print_success "Created group: $KISMET_GROUP"
+    else
+        print_warning "Group $KISMET_GROUP already exists"
+    fi
+    
+    if ! getent passwd "$KISMET_USER" > /dev/null 2>&1; then
+        useradd -r -g "$KISMET_GROUP" -d "$KISMET_DATA_DIR" -s /bin/false "$KISMET_USER"
+        print_success "Created user: $KISMET_USER"
+    else
+        print_warning "User $KISMET_USER already exists"
+    fi
+}
+
+# Function to create necessary directories
+create_directories() {
+    print_status "Creating necessary directories..."
+    
+    mkdir -p "$KISMET_HOME"
+    mkdir -p "$KISMET_LOG_DIR"
+    mkdir -p "$KISMET_DATA_DIR"
+    
+    chown -R "$KISMET_USER:$KISMET_GROUP" "$KISMET_LOG_DIR"
+    chown -R "$KISMET_USER:$KISMET_GROUP" "$KISMET_DATA_DIR"
+    
+    print_success "Created and configured directories"
+}
+
+# Function to generate main kismet.conf
+generate_main_config() {
+    print_status "Generating main kismet.conf..."
+    
+    cat > "$KISMET_HOME/kismet.conf" << EOF
+# Kismet configuration file
+# Generated by kismet configuration builder
+
+# Server name and location
+server_name=Kismet Server
+server_description=SDR Wireless Monitoring Server
+server_location=Ubuntu 24.04 Server
+
+# User and group to run as
+user=$KISMET_USER
+group=$KISMET_GROUP
+
+# Logging configuration
+log_config=true
+log_types=kismet,pcapng,alert
+log_title=kismet-\$(timestamp)
+log_prefix=$KISMET_LOG_DIR/
+
+# Data storage
+state_dir=$KISMET_DATA_DIR/
+
+# Memory and performance tuning
+max_clients=10
+max_backlog=5000
+alertbacklog=50
+
+# Packet capture settings
+pcap_buffer_size=1048576
+pcap_buffer_timeout=100
+
+# GPS configuration (if available)
+gps=false
+
+# Remote capture
+remote_capture_listen=0.0.0.0
+remote_capture_port=3501
+
+# Include additional configuration files
+include=$KISMET_HOME/kismet_site.conf
+include=$KISMET_HOME/kismet_httpd.conf
+include=$KISMET_HOME/kismet_memory.conf
+include=$KISMET_HOME/kismet_alerts.conf
+include=$KISMET_HOME/kismet_filter.conf
+include=$KISMET_HOME/kismet_logging.conf
+
+EOF
+
+    print_success "Generated kismet.conf"
+}
+
+# Function to generate HTTP server configuration
+generate_httpd_config() {
+    print_status "Generating kismet_httpd.conf..."
+    
+    cat > "$KISMET_HOME/kismet_httpd.conf" << EOF
+# Kismet HTTP server configuration
+
+# Web server bind address and port
+httpd_bind_address=$WEB_BIND
+httpd_port=$WEB_PORT
+
+# SSL configuration (disabled by default)
+httpd_ssl=false
+# httpd_ssl_cert=$KISMET_HOME/kismet.pem
+# httpd_ssl_key=$KISMET_HOME/kismet.key
+
+# Web root directory
+httpd_home=/usr/share/kismet/httpd/
+
+# Authentication
+httpd_user_file=$KISMET_HOME/kismet_httpd.conf
+
+# Session timeout (in seconds)
+httpd_session_timeout=7200
+
+# Maximum number of concurrent sessions
+httpd_max_sessions=10
+
+# MIME types
+httpd_mime=text/html:html,htm
+httpd_mime=text/css:css
+httpd_mime=text/javascript:js
+httpd_mime=application/json:json
+httpd_mime=image/png:png
+httpd_mime=image/gif:gif
+httpd_mime=image/jpeg:jpg,jpeg
+httpd_mime=application/octet-stream:*
+
+EOF
+
+    print_success "Generated kismet_httpd.conf"
+}
+
+# Function to generate device-specific configurations
+generate_device_configs() {
+    print_status "Generating device-specific configurations..."
+    
+    if [ ${#SELECTED_DEVICES[@]} -eq 0 ]; then
+        return
+    fi
+    
+    # Add device-specific configurations to kismet_site.conf
+    cat >> "$KISMET_HOME/kismet_site.conf" << EOF
+
+# SDR and wireless security device configurations
+# Generated based on user selection
+
+EOF
+    
+    for device in "${SELECTED_DEVICES[@]}"; do
+        case $device in
+            "RTLSDR")
+                cat >> "$KISMET_HOME/kismet_site.conf" << EOF
+# RTLSDR Configuration
+# Uncomment and modify as needed
+# source=rtl433:name=RTL433,info_antenna_type=omni
+# source=rtladsb:name=RTLADSB,info_antenna_type=omni
+# source=rtlamr:name=RTLAMR,info_antenna_type=omni
+
+EOF
+                ;;
+            "HackRF")
+                cat >> "$KISMET_HOME/kismet_site.conf" << EOF
+# HackRF Configuration  
+# Uncomment and modify as needed
+# source=hackrf:name=HackRF,device=0,info_antenna_type=omni
+
+EOF
+                ;;
+            "RSP")
+                cat >> "$KISMET_HOME/kismet_site.conf" << EOF
+# SDRplay RSP Configuration
+# Uncomment and modify as needed
+# source=sdrplay:name=RSP,device=0,info_antenna_type=omni
+
+EOF
+                ;;
+            "Ettus")
+                cat >> "$KISMET_HOME/kismet_site.conf" << EOF
+# Ettus USRP Configuration
+# Uncomment and modify as needed
+# source=usrp:name=USRP,device=0,info_antenna_type=omni
+
+EOF
+                ;;
+            "BladeRF")
+                cat >> "$KISMET_HOME/kismet_site.conf" << EOF
+# BladeRF Configuration
+# Uncomment and modify as needed
+# source=bladerf:name=BladeRF,device=0,info_antenna_type=omni
+
+EOF
+                ;;
+            "KerberosSDR")
+                cat >> "$KISMET_HOME/kismet_site.conf" << EOF
+# KerberosSDR Configuration (4-channel coherent RTL-SDR)
+# Uncomment and modify as needed
+# source=rtl433:name=Kerberos0,device=0,info_antenna_type=omni
+# source=rtl433:name=Kerberos1,device=1,info_antenna_type=omni
+# source=rtl433:name=Kerberos2,device=2,info_antenna_type=omni
+# source=rtl433:name=Kerberos3,device=3,info_antenna_type=omni
+
+EOF
+                ;;
+            "LimeSDR")
+                cat >> "$KISMET_HOME/kismet_site.conf" << EOF
+# LimeSDR Configuration
+# Uncomment and modify as needed
+# source=limesdr:name=LimeSDR,device=0,info_antenna_type=omni
+
+EOF
+                ;;
+            "PineappleNano")
+                cat >> "$KISMET_HOME/kismet_site.conf" << EOF
+# WiFi Pineapple Nano Configuration
+# Configure as remote capture source
+# remote_capture_listen=0.0.0.0
+# remote_capture_port=3501
+
+EOF
+                ;;
+            "Ubertooth")
+                cat >> "$KISMET_HOME/kismet_site.conf" << EOF
+# Ubertooth Configuration (Bluetooth monitoring)
+# Uncomment and modify as needed
+# source=ubertooth:name=Ubertooth,info_antenna_type=omni
+
+EOF
+                ;;
+        esac
+    done
+    
+    print_success "Generated configurations for: ${SELECTED_DEVICES[*]}"
+}
+
+# Function to generate memory configuration
+generate_memory_config() {
+    print_status "Generating kismet_memory.conf..."
+    
+    cat > "$KISMET_HOME/kismet_memory.conf" << EOF
+# Kismet memory management configuration
+
+# Maximum number of devices to track
+tracker_max_devices=10000
+
+# Device timeout (seconds)
+tracker_device_timeout=300
+
+# Maximum alerts in memory
+alertbacklog=50
+
+# Packet buffer size
+packet_buffer_size=2048
+
+# Memory cleanup interval (seconds)
+memory_cleanup_interval=60
+
+# Track history depth
+track_history_cloud=true
+track_history_size=1024
+
+EOF
+
+    print_success "Generated kismet_memory.conf"
+}
+
+# Function to generate alerts configuration
+generate_alerts_config() {
+    print_status "Generating kismet_alerts.conf..."
+    
+    cat > "$KISMET_HOME/kismet_alerts.conf" << EOF
+# Kismet alerts configuration
+
+# Enable/disable alert types
+alert=AIRJACKSSID
+alert=BCASTDISCON
+alert=CHANCHANGE
+alert=CRYPTODROP
+alert=DEAUTHFLOOD
+alert=DHCPNAMECHANGE
+alert=DHCPOSCHANGE
+alert=DISASSOCTRAFFIC
+alert=DISCONCODEINVALID
+alert=NULLPROBERESP
+alert=LONGSSID
+alert=LUCENTTEST
+alert=MSFBCOMSSID
+alert=MSFDLINKRATE
+alert=MSFNETGEARBEACON
+alert=NETSTUMBLER
+alert=NONCEDEGRADE
+alert=PROBENOJOIN
+alert=PROBECHAN
+alert=RATEANOMALIES
+
+# Alert thresholds
+alertbacklog=50
+alert_rate_limit=10/min
+
+# Alert destinations
+# Uncomment to enable syslog alerts
+# alert_syslog=true
+
+EOF
+
+    print_success "Generated kismet_alerts.conf"
+}
+
+# Function to generate filter configuration
+generate_filter_config() {
+    print_status "Generating kismet_filter.conf..."
+    
+    cat > "$KISMET_HOME/kismet_filter.conf" << EOF
+# Kismet packet filtering configuration
+
+# BPF filters for capture interfaces
+# Example filters (commented out by default)
+
+# Filter out beacon frames
+# filter_tracker=type mgt subtype beacon
+
+# Filter specific MAC addresses
+# filter_tracker=not ether host aa:bb:cc:dd:ee:ff
+
+# Filter by SSID
+# filter_tracker=not wlan ssid "unwanted_network"
+
+# Filter management frames
+# filter_tracker=not type mgt
+
+# Packet size filters
+filter_tracker=greater 0
+filter_tracker=less 65535
+
+EOF
+
+    print_success "Generated kismet_filter.conf"
+}
+
+# Function to generate logging configuration
+generate_logging_config() {
+    print_status "Generating kismet_logging.conf..."
+    
+    cat > "$KISMET_HOME/kismet_logging.conf" << EOF
+# Kismet logging configuration
+
+# Log file types and settings
+log_types=kismet,pcapng,alert
+
+# Log naming template
+log_title=kismet-\$(timestamp)
+
+# Log file locations
+log_prefix=$KISMET_LOG_DIR/
+
+# Log rotation
+logfile_rotate=true
+logfile_rotate_size=100M
+logfile_rotate_files=10
+
+# Packet logging
+pcapng_log_packets=true
+pcapng_log_data=true
+
+# Alert logging
+alert_log=true
+
+# Performance logging
+log_config=true
+
+EOF
+
+    print_success "Generated kismet_logging.conf"
+}
+
+# Function to set proper permissions
+set_permissions() {
+    print_status "Setting file permissions..."
+    
+    chown -R root:$KISMET_GROUP "$KISMET_HOME"
+    chmod -R 640 "$KISMET_HOME"/*.conf
+    chmod 750 "$KISMET_HOME"
+    
+    print_success "Set proper file permissions"
+}
+
+# Function to generate systemd service file
+generate_systemd_service() {
+    print_status "Generating systemd service file..."
+    
+    cat > "/etc/systemd/system/kismet.service" << EOF
+[Unit]
+Description=Kismet Wireless Detector
+After=network.target
+Wants=network.target
+
+[Service]
+Type=forking
+User=$KISMET_USER
+Group=$KISMET_GROUP
+ExecStart=/usr/bin/kismet --daemonize
+ExecReload=/bin/kill -HUP \$MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=$KISMET_LOG_DIR $KISMET_DATA_DIR
+
+[Install]
+WantedBy=multi-user.target
+
+EOF
+
+    systemctl daemon-reload
+    print_success "Generated systemd service file"
+}
+
+# Function to display summary
+display_summary() {
+    print_success "Kismet configuration complete!"
+    echo
+    echo -e "${BLUE}Configuration Summary:${NC}"
+    echo "  - Configuration directory: $KISMET_HOME"
+    echo "  - Log directory: $KISMET_LOG_DIR"
+    echo "  - Data directory: $KISMET_DATA_DIR"
+    echo "  - Web interface: http://$(hostname -I | awk '{print $1}'):$WEB_PORT"
+    echo "  - User/Group: $KISMET_USER:$KISMET_GROUP"
+    echo "  - Detected interfaces: $WIRELESS_INTERFACES"
+    if [ ${#SELECTED_DEVICES[@]} -gt 0 ]; then
+        echo "  - Configured devices: ${SELECTED_DEVICES[*]}"
+    fi
+    echo
+    echo -e "${YELLOW}Next Steps:${NC}"
+    echo "  1. Install Kismet: apt install kismet"
+    if [[ "${SELECTED_DEVICES[*]}" =~ "RTLSDR" ]]; then
+        echo "  2. Install RTL-SDR tools: apt install rtl-sdr"
+    fi
+    if [[ "${SELECTED_DEVICES[*]}" =~ "HackRF" ]]; then
+        echo "  2. Install HackRF tools: apt install hackrf"
+    fi
+    if [[ "${SELECTED_DEVICES[*]}" =~ "Ubertooth" ]]; then
+        echo "  2. Install Ubertooth tools: apt install ubertooth"
+    fi
+    echo "  3. Edit $KISMET_HOME/kismet_site.conf to uncomment and configure your devices"
+    echo "  4. Set web interface password: kismet_httpd_set_password"
+    echo "  5. Start Kismet: systemctl start kismet"
+    echo "  6. Enable auto-start: systemctl enable kismet"
+    echo
+    echo -e "${YELLOW}Device-Specific Notes:${NC}"
+    if [[ "${SELECTED_DEVICES[*]}" =~ "RTLSDR" ]]; then
+        echo "  - RTLSDR: May need udev rules for non-root access"
+        echo "  - RTLSDR: Check device enumeration with 'rtl_test'"
+    fi
+    if [[ "${SELECTED_DEVICES[*]}" =~ "HackRF" ]]; then
+        echo "  - HackRF: Update firmware with 'hackrf_spiflash'"
+        echo "  - HackRF: May need udev rules for non-root access"
+    fi
+    if [[ "${SELECTED_DEVICES[*]}" =~ "RSP" ]]; then
+        echo "  - RSP: Install SDRplay API from sdrplay.com"
+    fi
+    if [[ "${SELECTED_DEVICES[*]}" =~ "Ubertooth" ]]; then
+        echo "  - Ubertooth: Update firmware with 'ubertooth-dfu'"
+    fi
+    if [[ "${SELECTED_DEVICES[*]}" =~ "PineappleNano" ]]; then
+        echo "  - Pineapple: Configure as remote capture source"
+        echo "  - Pineapple: Install kismet_cap_linux on device"
+    fi
+    echo
+    echo -e "${YELLOW}Important Notes:${NC}"
+    echo "  - Wireless interfaces may need to be put in monitor mode"
+    echo "  - Root privileges may be required for monitor mode and SDR access"
+    echo "  - Check firewall settings for web interface access"
+    echo "  - Review and customize configuration files as needed"
+    echo "  - SDR configurations are commented out - uncomment to enable"
+}
+
+# Main execution
+main() {
+    echo -e "${GREEN}Kismet Wireless Configuration Builder${NC}"
+    echo "======================================"
+    
+    check_root
+    detect_sdr_devices
+    detect_interfaces
+    select_devices
+    create_user
+    create_directories
+    generate_main_config
+    generate_httpd_config
+    generate_site_config
+    generate_memory_config
+    generate_alerts_config
+    generate_filter_config
+    generate_logging_config
+    set_permissions
+    generate_systemd_service
+    display_summary
+}
+
+# Run main function
+main "$@"
