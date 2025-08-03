@@ -202,7 +202,18 @@ log "Installing packages..."
 # Install RTLAMR
 source $AWACS_PACKAGES/package_rtlamr
 
+# Install OpenWebRX
+if [ "$1" == "openwebrx" ]; then
+    log "Installing OpenWebRX ..."
+    source $AWACS_PACKAGES/package_openwebrx
+fi
+
 # Install Kismet
-source $AWACS_PACKAGES/package_kismet
+if [ "$1" == "kismet" ]; then
+    log "Installing Kismet ..."
+    source $AWACS_PACKAGES/package_kismet
+fi
+
+
 
 
