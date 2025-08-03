@@ -21,4 +21,4 @@ sudo usermod -aG kismet $USER
 sudo mkdir -p /etc/kismet
 sudo cp $AWACS_TEMPLATES/kismet_site.conf /etc/kismet/
 sudo mkdir -p /var/log/kismet
-sudo chown kismet:kismet /var/log/kismet
+sudo chown $USER:kismet /var/log/kismet
