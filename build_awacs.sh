@@ -103,7 +103,7 @@ sudo apt install -y build-essential git cmake pkg-config protobuf-compiler libpr
     libusb-1.0-0-dev python3-dev python3-pip python3-setuptools python3-build python3-protobuf python3-requests \
     python3-numpy python3-serial python3-usb python3-websockets libpcap-dev \
     libnl-3-dev libnl-genl-3-dev libcap-dev libpcre2-dev libncurses5-dev libsqlite3-dev \
-    libssl-dev zlib1g-dev libnm-dev libdw-dev libelf-dev
+    libssl-dev zlib1g-dev libnm-dev libdw-dev libelf-dev iw
 
 # libsensors4-dev  - No installation candidate
 
