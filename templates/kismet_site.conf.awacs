@@ -1,0 +1,466 @@
+# Kismet site-specific configuration for Ubuntu 24.04 Server
+# Hardware: Alfa WiFi AWUS036ACM, RTLSDRv3, HackRF, Ubertooth
+# Generated for multi-device SDR and wireless security monitoring
+
+# ===================================================================
+# SERVER IDENTIFICATION AND LOCATION
+# ===================================================================
+
+# Server identification
+server_name=SDR-Monitoring-Station
+server_description=Multi-Device SDR and Wireless Security Monitoring Server
+server_location=Ubuntu 24.04 Server - Firthcliffe, NY
+
+# GPS location (if known) - format: lat,lon,alt,spd,heading,fix
+# gps_location=41.0000,-73.0000,100.0,0.0,0.0,3
+
+# Server contact information
+server_contact=admin@localhost
+server_url=http://localhost:2501
+
+# ===================================================================
+# LOGGING AND DATA RETENTION SETTINGS
+# ===================================================================
+
+# Log file naming and rotation
+log_title=kismet-sdr-monitoring-%Y%M%D-%H%m%S
+log_prefix=/var/log/kismet/
+
+# Data retention policies
+track_history_cloud=true
+track_max_devices=50000
+device_timeout=7200
+
+# Alert settings
+alertbacklog=1000
+alert_backlog_timeout=86400
+
+# ===================================================================
+# NETWORK AND WEB INTERFACE SETTINGS
+# ===================================================================
+
+# Web interface configuration
+httpd_bind_address=0.0.0.0
+httpd_port=2501
+httpd_ssl=false
+httpd_session_timeout=7200
+
+# Remote capture settings
+remote_capture_listen=0.0.0.0
+remote_capture_port=3501
+
+# ===================================================================
+# MEMORY AND PERFORMANCE SETTINGS
+# ===================================================================
+
+# Memory management for high-capacity monitoring
+packet_buffer_warning=75
+packet_buffer_limit=1000000
+
+# Performance tuning for multiple SDR devices
+thread_pool_workers=8
+max_clients=20
+
+# ===================================================================
+# WIRELESS INTERFACE CONFIGURATION - ALFA AWUS036ACM
+# ===================================================================
+
+# ALFA Network AWUS036ACM Dual-Band AC1200 USB 3.0 Adapter
+# Chipset: Realtek RTL8812AU (dual-band 802.11ac)
+# Supports: 2.4GHz (150Mbps) + 5GHz (867Mbps) = AC1200
+# Monitor mode: Requires proper driver (rtl8812au-dkms)
+
+# Complete source configuration with all available parameters
+source=wlan0:name=AlfaAC1200,uuid=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee,info_antenna_type=omni,info_antenna_gain=5,info_amp_type=None,info_amp_gain=0,hop=true,channel_hoprate=3,split_same_phy=true,fcsfail=true,validate_fcs=true,retry_on_source_error=true,channel=6
+
+# Alternative interface naming patterns for AWUS036ACM
+# USB interface names often include MAC address portion
+# source=wlx00c0ca971c2a:name=AlfaAC1200_Alt,uuid=bbbbbbbb-cccc-dddd-eeee-ffffffffffff,info_antenna_type=omni,info_antenna_gain=5,hop=true,channel_hoprate=3
+
+# Dedicated 2.4GHz monitoring source
+# source=wlan0:name=Alfa_2G4,uuid=cccccccc-dddd-eeee-ffff-aaaaaaaaaaaa,info_antenna_type=omni,hop=true,channels="1,2,3,4,5,6,7,8,9,10,11",channel_hoprate=5,fcsfail=true
+
+# Dedicated 5GHz monitoring source (requires separate virtual interface)
+# source=wlan0mon:name=Alfa_5G,uuid=dddddddd-eeee-ffff-aaaa-bbbbbbbbbbbb,info_antenna_type=omni,hop=true,channels="36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140,149,153,157,161,165",channel_hoprate=3
+
+# Monitor mode setup for AWUS036ACM
+# Requires RTL8812AU driver with monitor mode support
+# sudo airmon-ng check kill
+# sudo airmon-ng start wlan0
+# OR manual setup:
+# sudo iw dev wlan0 set type monitor
+# sudo iw dev wlan0 set txpower fixed 3000  # 30dBm max for AWUS036ACM
+# sudo ip link set wlan0 up
+
+# Additional Wi-Fi source parameters (uncomment as needed):
+# source=wlan0:name=AlfaAdvanced,uuid=12345678-1234-5678-9abc-def012345678,info_antenna_type=omni,info_antenna_gain=5,info_amp_type=LNA,info_amp_gain=20,hop=true,channel_hoprate=3,channels="1,6,11,36,149",split_same_phy=false,fcsfail=true,validate_fcs=true,retry_on_source_error=true,channel=auto,band=2.4GHz
+
+# ===================================================================
+# RTL-SDR v3 CONFIGURATION  
+# ===================================================================
+
+# RTL433 - Monitor 433MHz ISM band devices
+# Covers garage doors, weather stations, tire pressure monitors, etc.
+source=rtl433:name=RTL433_ISM,uuid=11111111-2222-3333-4444-555555555555,device=0,gain=40,frequency=433920000,info_antenna_type=omni,info_antenna_gain=3,retry_on_source_error=true
+
+# RTL-SDR for ADSB aircraft tracking (1090MHz)
+source=rtladsb:name=RTL_ADSB,uuid=22222222-3333-4444-5555-666666666666,device=0,gain=40,frequency=1090000000,info_antenna_type=omni,info_antenna_gain=3,retry_on_source_error=true
+
+# RTL-SDR for AMR/AMI utility meter monitoring
+source=rtlamr:name=RTL_AMR,uuid=33333333-4444-5555-6666-777777777777,device=0,gain=40,frequency=915000000,info_antenna_type=omni,info_antenna_gain=3,retry_on_source_error=true
+
+# RTL-SDR generic tunable source (comment out others if using this)
+# source=rtlsdr:name=RTL_Generic,uuid=44444444-5555-6666-7777-888888888888,device=0,gain=40,frequency=433920000,info_antenna_type=omni,info_antenna_gain=3,sample_rate=2048000,retry_on_source_error=true
+
+# RTL-SDR device selection (if multiple RTL devices)
+# device=0 for first RTL-SDR, device=1 for second, etc.
+# Check with 'rtl_test' to see available devices
+
+# Additional RTL-SDR parameters:
+# ppm=0                    # PPM frequency correction
+# digital_gain=0           # Digital gain
+# offset_tuning=false      # Offset tuning mode
+# bias_tee=false          # Enable bias tee (RTL-SDR v3 only)
+
+# ===================================================================
+# HACKRF CONFIGURATION
+# ===================================================================
+
+# HackRF for wide-spectrum monitoring
+# Can tune from 1MHz to 6GHz
+source=hackrf:name=HackRF_Wide,uuid=55555555-6666-7777-8888-999999999999,device=0,gain=14,lna_gain=32,vga_gain=30,frequency=2412000000,info_antenna_type=omni,info_antenna_gain=2,sample_rate=10000000,retry_on_source_error=true
+
+# HackRF for 2.4GHz WiFi monitoring (alternative to Alfa)
+# source=hackrf:name=HackRF_WiFi,uuid=66666666-7777-8888-9999-aaaaaaaaaaaa,device=0,gain=14,lna_gain=32,vga_gain=30,frequency=2437000000,hop=true,info_antenna_type=omni,info_antenna_gain=2
+
+# HackRF for cellular monitoring (be aware of legal restrictions)
+# source=hackrf:name=HackRF_Cellular,uuid=77777777-8888-9999-aaaa-bbbbbbbbbbbb,device=0,gain=14,lna_gain=32,vga_gain=30,frequency=850000000,info_antenna_type=omni,info_antenna_gain=2
+
+# HackRF parameters explained:
+# gain: Overall gain (0-47 dB)
+# lna_gain: Low noise amplifier gain (0-40 dB, 8dB steps)
+# vga_gain: Variable gain amplifier (0-62 dB, 2dB steps)
+# sample_rate: Sample rate in Hz (2-20 MHz typical)
+# frequency: Center frequency in Hz
+# bandwidth: Baseband filter bandwidth (1.75-28 MHz)
+
+# Additional HackRF parameters (uncomment as needed):
+# amp_enable=false         # Enable RF amplifier
+# antenna_enable=false     # Enable antenna port power
+
+# ===================================================================
+# UBERTOOTH CONFIGURATION
+# ===================================================================
+
+# Ubertooth for Bluetooth monitoring and analysis
+source=ubertooth:name=Ubertooth_BT,uuid=88888888-9999-aaaa-bbbb-cccccccccccc,device=0,info_antenna_type=omni,info_antenna_gain=2,retry_on_source_error=true
+
+# Ubertooth for Bluetooth LE monitoring
+source=ubertooth:name=Ubertooth_BLE,uuid=99999999-aaaa-bbbb-cccc-dddddddddddd,device=0,btle=true,info_antenna_type=omni,info_antenna_gain=2,retry_on_source_error=true
+
+# Additional Ubertooth parameters:
+# follow_lmp=true          # Follow LMP (Link Manager Protocol) 
+# btbb_channel=39          # Bluetooth baseband channel (0-78)
+# target=AA:BB:CC:DD:EE:FF # Target specific device MAC address
+# promiscuous=true         # Promiscuous mode for all devices
+# scan_window=11.25        # LE scan window in ms
+# scan_interval=1280       # LE scan interval in units of 0.625ms
+
+# ===================================================================
+# CHANNEL HOPPING CONFIGURATION - OPTIMIZED FOR AWUS036ACM
+# ===================================================================
+
+# Enable channel hopping for dual-band WiFi monitoring
+channel_hop=true
+channel_hop_speed=3
+
+# Comprehensive dual-band channel list for AC1200 capability
+# 2.4GHz channels (1-11 US, 1-13 EU) + 5GHz channels
+channel_hop_list=1,6,11,36,40,44,48,2,7,52,56,60,64,3,8,100,104,108,112,4,9,116,120,124,128,5,10,132,136,140,149,153,157,161,165
+
+# Alternative: Separate 2.4GHz and 5GHz hopping (comment above if using this)
+# 2.4GHz only hopping
+# channel_hop_list=1,6,11,2,7,3,8,4,9,5,10
+
+# 5GHz only hopping (for dedicated 5GHz monitoring)
+# channel_hop_list=36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140,149,153,157,161,165
+
+# 802.11ac specific channels (80MHz and 160MHz channel centers)
+# channel_hop_list=42,58,106,122,138,155
+
+# Custom dwell time per channel (milliseconds) - optimized for AC1200
+channel_dwell_time=200
+
+# Enable 802.11ac features
+wifi_ac_support=true
+wifi_n_support=true
+
+# ===================================================================
+# REMOTE CAPTURE CONFIGURATION
+# ===================================================================
+
+# Enable remote capture for distributed monitoring
+remote_capture_listen=0.0.0.0
+remote_capture_port=3501
+
+# Remote capture authentication
+remote_capture_certificate=/etc/kismet/kismet.pem
+
+# ===================================================================
+# DEVICE-SPECIFIC SETTINGS
+# ===================================================================
+
+# OUI (Organizationally Unique Identifier) database
+ouifile=/usr/share/kismet/kismet_manuf.txt.gz
+oui_update=true
+
+# GPS configuration (if GPS device available)
+gps=false
+# gps=gpsd:host=localhost,port=2947
+
+# ===================================================================
+# FREQUENCY AND BAND SETTINGS
+# ===================================================================
+
+# Define frequency bands for comprehensive monitoring
+frequency_band=70cm:420000000-450000000
+frequency_band=33cm:902000000-928000000
+frequency_band=ISM_433:433050000-434790000
+frequency_band=ISM_915:902000000-928000000
+frequency_band=WiFi_2G4:2400000000-2485000000
+frequency_band=WiFi_5G:5150000000-5825000000
+frequency_band=BT_LE:2400000000-2485000000
+frequency_band=ADSB:1090000000-1090000000
+
+# Band-specific settings
+default_frequency=2437000000
+spectrum_line_avg=8
+
+# ===================================================================
+# DEVICE DETECTION AND TRACKING SETTINGS
+# ===================================================================
+
+# Device tracking parameters
+track_device_seenby_view=true
+track_device_timeout=300
+track_max_seenby_records=50
+
+# Bluetooth device settings
+bluetooth_device_timeout=300
+bluetooth_scan_reports=true
+
+# 802.11 specific settings
+dot11_view_accesspoints=true
+dot11_view_ssids=true
+dot11_view_probes=true
+dot11_view_clients=true
+dot11_view_wep=true
+dot11_view_wpa=true
+
+# RF device settings (RTL433, etc.)
+rf_device_timeout=600
+rf_scan_block_time=5
+
+# ===================================================================
+# FILTERING AND PROCESSING SETTINGS
+# ===================================================================
+
+# Packet filtering
+filter_tracker=any
+filter_export=any
+
+# Processing options
+packet_dedup_size=2048
+manuf_lookup=true
+assume_ht20=false
+assume_ht40=false
+
+# Data source retry settings
+source_retry_attempts=5
+source_retry_delay=5
+
+# ===================================================================
+# ALERTING AND NOTIFICATION SETTINGS
+# ===================================================================
+
+# Alert configuration
+enable_alerts=true
+alert_rate_limit=10/min
+
+# Specific alert types
+alert_probe_respond=true
+alert_adhoc_ssid=true
+alert_null_ssid=true
+alert_broadcast_disconnect=true
+alert_channel_change=true
+alert_dhcp_name_change=true
+alert_dhcp_os_change=true
+alert_bluetooth_device_too_close=true
+
+# ===================================================================
+# OUI AND MANUFACTURER DATABASE SETTINGS
+# ===================================================================
+
+# Organizationally Unique Identifier database
+ouifile=/usr/share/kismet/kismet_manuf.txt.gz
+ouifile_update_url=https://standards-oui.ieee.org/oui/oui.txt
+oui_lookup=true
+manuf_lookup=true
+
+# Update settings
+oui_update=true
+oui_update_interval=604800
+
+# ===================================================================
+# GPS AND LOCATION SERVICES
+# ===================================================================
+
+# GPS configuration
+gps=false
+# Uncomment and configure if GPS device available:
+# gps=gpsd:host=localhost,port=2947,reconnect=true
+# gps=tcp:host=192.168.1.100,port=4352
+# gps=serial:device=/dev/ttyUSB0,baud=4800
+
+# Location settings
+gps_reconnect=true
+gps_distance_resolution=10
+gps_time_resolution=1
+
+# Static location (if no GPS available)
+# override_gps_location=41.0000,-73.0000,100.0
+
+# ===================================================================
+# SPECTRUM ANALYSIS SETTINGS
+# ===================================================================
+
+# Enable spectrum sweep for SDR devices
+enable_spectrum=true
+spectrum_sweep=true
+spectrum_sweep_time=10
+spectrum_line_avg=8
+
+# FFT settings for spectrum analysis
+fft_threads=4
+spectrum_bin_width=1000
+
+# ===================================================================
+# DATABASE AND STORAGE SETTINGS
+# ===================================================================
+
+# Database configuration
+database_log=true
+database_log_name=kismet_database_%Y%M%D_%H%m%S.kisdb
+
+# Storage settings
+state_dir=/var/lib/kismet/
+configdir=/etc/kismet/
+
+# Temporary file settings
+temporary_dir=/tmp/kismet/
+pid_dir=/var/run/kismet/
+
+# ===================================================================
+# PLUGIN AND MODULE SETTINGS
+# ===================================================================
+
+# Enable plugins
+loadplugin=autowep
+loadplugin=ptw
+loadplugin=spectools
+
+# Plugin directories
+plugin_dir=/usr/lib/kismet/
+plugin_dir=/usr/local/lib/kismet/
+
+# ===================================================================
+# ADVANCED CONFIGURATION OVERRIDES
+# ===================================================================
+
+# Override default configuration files if needed
+# include=/etc/kismet/kismet_advanced.conf
+# include=/etc/kismet/kismet_custom_alerts.conf
+# include=/etc/kismet/kismet_custom_filters.conf
+
+# Source error handling
+source_stale_purge=300
+source_error_max=25
+
+# Time synchronization
+time_precision=1000
+
+# Misc settings
+newcore=true
+allowplugins=true
+metric=false
+
+# ===================================================================
+# NOTES AND TROUBLESHOOTING - AWUS036ACM SPECIFIC
+# ===================================================================
+
+# ALFA AWUS036ACM Setup Requirements:
+# 1. Install proper RTL8812AU driver with monitor mode support:
+#    sudo apt update
+#    sudo apt install dkms build-essential linux-headers-$(uname -r)
+#    git clone https://github.com/morrownr/8812au-20210820.git
+#    cd 8812au-20210820
+#    sudo ./install-driver.sh
+
+# 2. Verify driver installation:
+#    lsmod | grep 8812au
+#    dmesg | grep 8812au
+
+# 3. Device enumeration commands:
+#    lsusb | grep -E "(RTL|HackRF|Ubertooth|Realtek)"
+#    iw dev (show wireless interfaces)
+#    iw list (show capabilities)
+
+# 4. AWUS036ACM specific checks:
+#    lsusb | grep "0bda:8812"  # Should show RTL8812AU
+#    iw dev wlan0 info         # Show interface details
+#    iw phy phy0 info          # Show PHY capabilities
+
+# 5. Monitor mode setup for AWUS036ACM:
+#    sudo airmon-ng check kill  # Kill interfering processes
+#    sudo airmon-ng start wlan0
+#    # OR manual setup:
+#    sudo iw dev wlan0 set type monitor
+#    sudo iw dev wlan0 set txpower fixed 3000  # 30dBm (1W) max power
+#    sudo ip link set wlan0 up
+#    sudo iw dev wlan0 set channel 6  # Test channel setting
+
+# 6. Verify monitor mode:
+#    iw dev wlan0 info  # Should show "type monitor"
+#    sudo tcpdump -i wlan0  # Should capture packets
+
+# RTL-SDR, HackRF, Ubertooth tests:
+# rtl_test -t  (test RTL-SDR)
+# hackrf_info  (test HackRF)
+# ubertooth-util -v (test Ubertooth)
+
+# Permissions setup:
+# sudo usermod -a -G dialout,plugdev kismet
+# May need udev rules for non-root access to USB devices
+
+# Common AWUS036ACM issues:
+# - Driver: Ensure RTL8812AU driver supports monitor mode
+# - USB 3.0: Use USB 3.0 port for best performance (backward compatible)
+# - Power: AWUS036ACM draws significant power, use powered hub if needed
+# - Interference: 5GHz band less congested than 2.4GHz
+# - Range: Long-range adapter, position antennas appropriately
+# - Heat: Device may get warm during extended operation
+
+# AWUS036ACM specifications:
+# - Frequency: 2.4GHz (150Mbps) + 5GHz (867Mbps)
+# - Standards: 802.11a/b/g/n/ac
+# - Antennas: 2x 5dBi detachable dual-band antennas
+# - Chipset: Realtek RTL8812AU
+# - USB: USB 3.0 (backward compatible with USB 2.0)
+# - TX Power: Up to 30dBm (1000mW)
+# - Range: Up to 1000m line-of-sight
+
+# Frequency ranges:
+# RTL-SDR v3: 500kHz - 1.7GHz (with direct sampling: 0-28MHz)  
+# HackRF One: 1MHz - 6GHz
+# Ubertooth One: 2.4GHz ISM band (Bluetooth)
+# AWUS036ACM: 2.4GHz (2400-2484MHz) + 5GHz (5150-5825MHz)
