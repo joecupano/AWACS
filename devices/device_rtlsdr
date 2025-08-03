@@ -10,7 +10,7 @@
 ###
 
 log "Installing RTL-SDR support..."
-sudo apt install -y rtl-sdr librtlsdr0 librtlsdr-dev
+sudo apt install -y rtl-sdr librtlsdr2 librtlsdr-dev
 
 ## COMPILE OPTION
 #sudo apt-get install -y libusb-1.0-0-dev
