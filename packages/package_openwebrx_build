@@ -127,14 +127,13 @@ git clone https://github.com/jketterl/openwebrx.git
         
 ### Data Storage
 sudo mkdir /var/lib/openwebrx
-sudo chown pi /var/lib/openwebrx
+sudo chown pi. /var/lib/openwebrx
 touch /var/lib/openwebrx/users.json
 touch /var/lib/openwebrx/bands.json
         
-### Data Storage
-#mkdir $SIGPI_ROOT/openwebrx-store
-#touch $SIGPI_ROOT/openwebrx-store/users.json
-#touch $SIGPI_ROOT/openwebrx-store/bands.json
+sudo sh -c "echo [] > /var/lib/openwebrx/users.json"
+sudo chown pi. /var/lib/openwebrx/users.json
+sudo chmod 0600 /var/lib/openwebrx/users.json
 
 ### Run OpenWebRX to complete setup
 cd $AWACS_SOURCE/openwebrx
@@ -146,7 +145,7 @@ cd $AWACS_SOURCE/openwebrx
 ./openwebrx.py admin adduser pi
 
 ### Setup and enable systemd service
-sudo cp $AWACS_SOURCE/scripts/openwebrx.service /etc/systemd/system/openwebrx.service
+sudo cp $AWACS_TEMPLATES/openwebrx.service /etc/systemd/system/openwebrx.service
 sleep 5
 sudo systemctl enable openwebrx
 
