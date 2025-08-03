@@ -1,0 +1,18 @@
+#!/bin/bash
+
+###
+### AWACS Package
+###
+### package_openwebrx
+###
+###
+### 20250801-0100
+###
+
+log "Installing OpenWebRX ..."
+
+cd $AWACS_SOURCE
+wget -O /usr/share/keyrings/openwebrx.gpg https://repo.openwebrx.de/openwebrx.gpg
+echo "deb [signed-by=/usr/share/keyrings/openwebrx.gpg] https://repo.openwebrx.de/ubuntu/ unstable main" | sudo tee /etc/apt/sources.list.d/openwebrx-unstable.list
+sudo apt-get update
+sudo apt-get install openwebrx

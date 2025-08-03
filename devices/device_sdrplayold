@@ -1,0 +1,34 @@
+#!/bin/bash
+
+###
+### AWACS Device Setup Script
+###
+### device_sdrplayold
+###
+###
+### 20250801-0100
+###
+
+log "Installing SDRplay ..."
+sudo cp $AWACS_DEVICES/device_sdrplayold_run /usr/local/bin/device_sdrplayold_run
+sudo chmod 755 /usr/local/bin/device_sdrplayold_run
+
+cd $AWACS_SOURCE
+tar -xvf $AWACS_DEBS/SDRPlay_RSP_API-x86_64-3.0.7.tar.gz
+cd SDRPlay
+sudo ./install_lib.sh
+
+cd $AWACS_SOURCE
+git clone https://github.com/SDRplay/RSPTCPServer
+cd RSPTCPServer
+mkdir build && cd build
+cmake .. -Wno-dev
+make -j4
+sudo make install
+sudo ldconfig
+echo " "
+echo "SDRplayuser guide can be found at ..."
+echo "https://www.sdrplay.com/docs/SDRplay_RSP_TCP_Server_Guide.pdf"
+echo " "
+
+       

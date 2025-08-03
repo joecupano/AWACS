@@ -1,0 +1,27 @@
+#!/bin/bash
+
+###
+### AWACS Device Setup Script
+###
+### device_limesuite
+###
+###
+### 20250801-0100
+###
+
+## DEPENDENCIES
+sudo apt-get install -y swig libsqlite3-dev libi2c-dev libusb-1.0-0-dev liboctave-dev libfltk1.3-dev
+# sudo apt-get install -y libwxgtk3.0-dev
+# Following is rpelacement fot libwxgtk3.0-dev
+sudo apt-get install -y libwxbase3.0-0v5 freeglut3-dev
+
+cd $AWACS_SOURCE       
+git clone https://github.com/myriadrf/LimeSuite.git
+cd LimeSuite
+git checkout stable
+mkdir build-dir && cd build-dir
+cmake .. -Wno-dev
+make -j4
+sudo make install
+sudo ldconfig
+

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+###
+### AWACS Device Setup Script
+###
+### device_ettus
+###
+###
+### 20250801-0100
+###
+
+log "Installing Ettus UHD support..."
+
+## DEPENDENCIES
+sudo apt-get install -y libboost-all-dev libusb-1.0-0-dev python3-mako
+
+## PACKAGE
+cd $AWACS_SOURCE
+git clone https://github.com/EttusResearch/uhd.git
+cd uhd
+git checkout UHD-4.6
+cd host
+mkdir build	&& cd build
+cmake .. -Wno-dev
+sudo make install
+sudo cp /usr/local/lib/uhd/utils/uhd-usrp.rules /etc/udev/rules.d/
+sudo ldconfig
+sudo uhd_images_downloader

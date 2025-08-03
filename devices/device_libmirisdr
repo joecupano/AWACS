@@ -1,0 +1,23 @@
+#!/bin/bash
+
+###
+### AWACS Device Setup Script
+###
+### device_libmirisdr
+###
+###
+### 20250801-0100
+###
+
+log "Installing SDRplay RSPx support..."
+sudo modprobe -r msi2500 msi001
+sudo cp $AWACS_TEMPLATES/blacklist_sdrplay.conf /etc/modprobe.d/blacklist_sdrplay.conf
+
+cd $AWACS_SOURCE
+git clone https://github.com/ericek111/libmirisdr-5
+cd libmirisdr-5
+mkdir build && cd build
+cmake .. -Wno-dev
+make -j4
+sudo make install
+sudo ldconfig

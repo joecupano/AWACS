@@ -1,0 +1,27 @@
+#!/bin/bash
+
+###
+### AWACS Package
+###
+### package_rtlamr
+###
+###
+### 20250801-0100
+###
+
+log "Installing RTLAMR ..."
+
+# Install prerequisites
+sudo apt install golang rtl-sdr -y
+
+# Clone and build rtlamr
+cd $AWACS_SOURCE
+git clone https://github.com/bemasher/rtlamr.git
+cd rtlamr
+go build
+
+# Install binary
+sudo cp rtlamr /usr/local/bin/
+ 
+
+

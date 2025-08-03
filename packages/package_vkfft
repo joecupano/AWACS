@@ -1,0 +1,21 @@
+#!/bin/bash
+
+###
+### AWACS Package
+###
+### package_vkfft
+###
+###
+### 20250801-0100
+###
+
+log "Installing vkFFT ..."
+
+### VkFFT is an efficient GPU-accelerated multidimensional Fast Fourier Transform library for
+### Vulkan/CUDA/HIP/OpenCL/Level Zero/Metal projects. VkFFT aims to provide the community with an open-source alternative 
+### to Nvidia's cuFFT library while achieving better performance. VkFFT is written in C language and supports
+### Vulkan, CUDA, HIP, OpenCL, Level Zero and Metal as backends. (https://github.com/DTolm/VkFFT)
+###
+
+## DEPENDENCIES
+sudo dpkg -i vkfft_1.3.1-1_amd64.deb

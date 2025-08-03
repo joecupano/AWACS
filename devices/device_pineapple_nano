@@ -1,0 +1,31 @@
+#!/bin/bash
+
+###
+### AWACS Device Setup Script
+###
+### device_pineapple_nano
+###
+###
+### 20250802-0500
+###
+
+log "Installing Pineapple Nano support..."
+
+# The Pineapple creates a USB network interface when connected
+# Check for new network interface
+ip addr show
+
+# Look for interface like usb0, enp0s20u1, or similar
+# Pineapple typically assigns itself 172.16.42.1
+# Host gets 172.16.42.42
+
+# If not auto-configured, set manually:
+sudo ip addr add 172.16.42.42/24 dev usb0
+sudo ip link set usb0 up
+
+# Enable IP forwarding for internet sharing (optional)
+#echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+
+# Share internet connection (optional)
+#sudo iptables -t nat -A POSTROUTING -s 172.16.42.0/24 -j MASQUERADE
+#sudo iptables -A FORWARD -s 172.16.42.0/24 -j ACCEPT

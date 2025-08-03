@@ -1,0 +1,28 @@
+#!/bin/bash
+
+###
+### AWACS Device Setup Script
+###
+### device_rtlsdr
+###
+###
+### 20250729-1400
+###
+
+log "Installing RTL-SDR support..."
+sudo apt install -y rtl-sdr librtlsdr0 librtlsdr-dev
+
+## COMPILE OPTION
+#sudo apt-get install -y libusb-1.0-0-dev
+#pip3 install --user pyrtlsdr
+#cd $AWACS_SOURCE
+#git clone https://github.com/osmocom/rtl-sdr.git
+#cd rtl-sdr
+#mkdir build	&& cd build
+#cmake ../ -DINSTALL_UDEV_RULES=ON -DDETACH_KERNEL_DRIVER=ON
+#make
+#sudo make install
+#sudo cp ../rtl-sdr.rules /etc/udev/rules.d/
+#sudo ldconfig
+#echo 'blacklist dvb_usb_rtl28xxu' | sudo tee --append /etc/modprobe.d/blacklist-dvb_usb_rtl28xxu.conf
+

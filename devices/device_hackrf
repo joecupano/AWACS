@@ -1,0 +1,22 @@
+#!/bin/bash
+
+###
+### AWACS Device Setup Script
+###
+### device_hackrf 
+###
+###
+### 20250801-0100
+###
+
+log "Installing HackRF support..."
+sudo apt-get install -y libusb-1.0-0-dev libfftw3-dev
+
+cd $AWACS_SOURCE
+git clone https://github.com/mossmann/hackrf.git
+cd hackrf && cd host
+mkdir build && cd build
+cmake .. -Wno-dev
+make
+sudo make install
+sudo ldconfig

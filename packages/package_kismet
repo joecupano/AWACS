@@ -1,0 +1,24 @@
+#!/bin/bash
+
+###
+### AWACS Package
+###
+### package_kismet
+###
+###
+### 20250801-0100
+###
+
+log "Installing Kismet ..."
+
+cd $AWACS_SOURCE
+wget -O - https://www.kismetwireless.net/repos/kismet-release.gpg.key --quiet | gpg --dearmor | sudo tee /usr/share/keyrings/kismet-archive-keyring.gpg >/dev/null
+echo 'deb [signed-by=/usr/share/keyrings/kismet-archive-keyring.gpg] https://www.kismetwireless.net/repos/apt/git/noble noble main' | sudo tee /etc/apt/sources.list.d/kismet.list >/dev/null
+sudo apt update
+sudo apt install kismet -y
+sudo usermod -aG kismet $USER
+
+sudo mkdir -p /etc/kismet
+sudo cp $AWACS_TEMPLATES/kismet_site.conf /etc/kismet/
+sudo mkdir -p /var/log/kismet
+sudo chown kismet:kismet /var/log/kismet

@@ -1,0 +1,12 @@
+bladerf,no
+ettus,no
+gpsd,yes
+hackrf,yes
+kerberos,no
+libmirisdr,no
+limesuite,no
+pineapplenano,no
+plutosdr,no
+rtlsdr,yes
+sdrplay_old,no
+ubertooth,yes

@@ -1,0 +1,7 @@
+dump1090,1.0,Mode S decoder specifically designed for RTLSDR devices,20211231
+fftw,3.3.10,Create wisdom pre-optimized FFTs files for SDR,20230831
+inspectrum,0.3.1,Tool for analysing captured signals primarily from SDRs,20211231
+kismet,2023-07-R1,Wired and wireless network sniffer for Wi-Fi Bluetooth Zigbee,20230828
+libbtbb,2020-12-R1,Bluetooth baseband decoding library,20211231
+openwebrx,1.0,Open source multi-user SDR receiver software with web interface,20211231
+sdrangelsrv,7.22.8,Open-source SDR server,20250703

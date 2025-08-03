@@ -1,0 +1,19 @@
+#!/bin/bash
+
+###
+### AWACS Device Setup Script
+###
+### device_gps
+###
+###
+### 20250801-0100
+###
+
+log "Installing GPS support..."
+
+## DEPENDENCIES
+sudo apt-get install -y gpsd gpsd-clients python3-gps chrony
+pip3 install --user gpsd-py3
+
+sudo cp $AWACS_TEMPLATES/gpsd.conf /etc/default/gpsd
+sudo systemctl enable gpsd

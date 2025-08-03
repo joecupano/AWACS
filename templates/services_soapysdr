@@ -1,0 +1,98 @@
+#!/bin/bash
+
+###
+### SIGPI
+###
+### services_soapysdr
+##
+###
+### 20240110-0100
+###
+
+
+# RTLSDR v4 from RTL-SDR-BLOG
+### DEPENDENCIES
+#sudo apt purge ^librtlsdr
+#sudo rm -rvf /usr/lib/librtlsdr* /usr/include/rtl-sdr* /usr/local/lib/librtlsdr* /usr/local/include/rtl-sdr* /usr/local/include/rtl_* /usr/local/bin/rtl_* 
+#sudo apt-get install -y libusb-1.0-0-dev
+        
+## PACKAGE
+#cd $SIGINTURCE
+#git clone https://github.com/rtlsdrblog/rtl-sdr-blog
+#cd rtl-sdr-blog
+#mkdir build && cd build
+#cmake ../ -DINSTALL_UDEV_RULES=ON -DDETACH_KERNEL_DRIVER=ON
+#make -j4
+#sudo make install
+#sudo cp ../rtl-sdr.rules /etc/udev/rules.d/
+#sudo ldconfig
+#echo 'blacklist dvb_usb_rtl28xxu' | sudo tee --append /etc/modprobe.d/blacklist-dvb_usb_rtl28xxu.conf
+
+# SoapySDR
+log "Installing SoapySDR support..."
+
+## DEPENDENCIES
+
+## INSTALL
+cd $AWACS_SOURCE
+git clone https://github.com/pothosware/SoapySDR.git
+cd SoapySDR
+mkdir build && cd build
+cmake ../ -Wno-dev -DCMAKE_BUILD_TYPE=Release
+make -j4
+sudo make install
+sudo ldconfig
+SoapySDRUtil --info
+
+# SoapyRTLSDR
+log "Installing SoapyRTLSDR support..."
+
+## INSTALL
+cd $AWACS_SOURCE
+git clone https://github.com/pothosware/SoapyRTLSDR.git
+cd SoapyRTLSDR
+mkdir build && cd build
+cmake .. -Wno-dev -DCMAKE_BUILD_TYPE=Release
+make
+sudo make install
+sudo ldconfig
+
+# SoapyHackRF
+log "Installing SoapyHackRF support..."
+
+## INSTALL
+cd $AWACS_SOURCE
+git clone https://github.com/pothosware/SoapyHackRF.git
+cd SoapyHackRF
+mkdir build && cd build
+cmake .. -Wno-dev -DCMAKE_BUILD_TYPE=Release
+make
+sudo make install
+sudo ldconfig
+
+# SoapyRemote
+log "Installing SoapyRemote support..."
+
+## INSTALL
+cd $SIGINTURCE
+git clone https://github.com/pothosware/SoapyRemote.git
+cd SoapyRemote
+mkdir build && cd build
+cmake .. -Wno-dev
+make
+sudo make install
+sudo ldconfig
+
+
+# SoapySDRplay
+log "Installing SoapySDRplay support..."
+
+## INSTALL
+cd $SIGINTURCE
+git clone https://github.com/ericek111/SoapyMiri
+cd SoapyMiri
+mkdir build && cd build
+cmake .. -Wno-dev
+make -j4
+sudo make install
+sudo ldconfig

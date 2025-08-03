@@ -1,0 +1,52 @@
+#!/bin/bash
+
+###
+### AWACS Package
+###
+### package_sdrangelsrv
+###
+###
+### 20250801-0100
+###
+
+log "Installing SDRangel Server ..."
+
+## DEPENDENCIES
+sudo apt-get install -y libfftw3-dev
+sudo apt-get install -y libusb-1.0-0-dev
+sudo apt-get install -y libusb-dev
+sudo apt-get install -y libboost-all-dev
+sudo apt-get install -y libasound2-dev
+sudo apt-get install -y libgl1-mesa-dev 
+sudo apt-get install -y gettext
+sudo apt-get install -y pulseaudio
+sudo apt-get install -y libopencv-dev
+sudo apt-get install -y libxml2-dev
+sudo apt-get install -y bison
+sudo apt-get install -y flex
+sudo apt-get install -y ffmpeg
+sudo apt-get install -y libavcodec-dev
+sudo apt-get install -y libavformat-dev
+sudo apt-get install -y opus-tools
+sudo apt-get install -y libopus-dev
+sudo apt-get install -y qml-module-qtlocation
+sudo apt-get install -y qml-module-qtpositioning
+sudo apt-get install -y qml-module-qtquick-window2
+sudo apt-get install -y qml-module-qtquick-dialogs
+sudo apt-get install -y qml-module-qtquick-controls
+sudo apt-get install -y qml-module-qtquick-layouts
+
+## PACKAGE
+cd $AWACS_PACKAGES
+sdo dpkg -i sdrangelsrv_current_amd64.deb
+
+### FFTW-WISDOM CHECK AND LINK
+mkdir $HOME/.config/f4exb
+mkdir $HOME/.local/share/f4exb
+mkdir $HOME/.local/share/f4exb/SDRangel
+if [ ! -f "$AWACS_ETC/fftw-wisdom" ]; then
+    fftwf-wisdom -v -n -o $AWACS_ETC/fftw-wisdom 128 256 512 1024 2048 4096 8192 16384 32768
+fi
+cp $AWACS_ETC/fftw-wisdom $HOME/.local/share/f4exb/SDRangel/fftw-wisdom
+cp $AWACS_ETC/fftw-wisdom $HOME/.config/f4exb/SDRangel/fftw-wisdom
+

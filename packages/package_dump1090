@@ -1,0 +1,27 @@
+#!/bin/bash
+
+###
+### AWACS Package
+###
+### package_dump1090
+###
+###
+### 20250801-0100
+###
+
+log "Installing AWACS package dump1090"
+
+## DEPENDENCIES
+
+## PACKAGE
+
+### FlightAware fork
+sudo apt-get -y install dump1090-mutability
+
+### Mutability Original
+#cd $AWACS_SOURCE
+#git clone https://github.com/antirez/dump1090.git
+#cd dump1090
+#make -j4
+#sudo cp dump1090 /usr/local/bin/dump1090
+#echo "dump1090" >> $SIGPI_INSTALLED 

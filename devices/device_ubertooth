@@ -1,0 +1,39 @@
+#!/bin/bash
+
+###
+### AWACS Device Setup Script
+###
+### device_ubertooth
+###
+###
+### 20250801-0100
+###
+
+log "Installing Ubertooth support..."
+
+## DEPENDENCIES
+sudo apt-get install -y libusb-1.0-0-dev libbluetooth-dev 
+sudo apt-get install -y python3-qtpy 
+sudo apt-get install -y python3-distutils 
+sudo apt-get install -y python3-setuptools
+
+### LibBTBB Library
+cd $AWACS_SOURCE
+git clone https://github.com/greatscottgadgets/libbtbb.git
+cd libbtbb
+mkdir build && cd build
+cmake .. -Wno-dev
+make -j4
+sudo make install
+sudo ldconfig
+
+### Ubertooth
+cd $AWACS_SOURCE
+git clone https://github.com/greatscottgadgets/ubertooth.git
+cd ubertooth/host
+mkdir build && cd build
+cmake .. -Wno-dev
+make -j4
+sudo make install
+sudo ldconfig
+  
