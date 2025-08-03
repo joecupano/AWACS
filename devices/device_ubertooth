@@ -13,8 +13,7 @@ log "Installing Ubertooth support..."
 
 ## DEPENDENCIES
 sudo apt-get install -y libusb-1.0-0-dev libbluetooth-dev 
-sudo apt-get install -y python3-qtpy 
-sudo apt-get install -y python3-distutils 
+#sudo apt-get install -y python3-distutils python3-qtpy 
 sudo apt-get install -y python3-setuptools
 
 ### LibBTBB Library
