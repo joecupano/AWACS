@@ -1,0 +1,106 @@
+#!/bin/bash
+
+###
+### AWACS
+###
+###  20250803-0900
+###
+
+###
+### Usage:  AWACS [ACTION] [TARGET]
+### 
+###         ACTION
+###             build             build AWACS script
+###             package-install   install TARGET package
+###             device-install    install TARGET device
+###             
+###         TARGET
+###             A AWACS package or device
+###
+###
+
+
+#
+# INIT VARIABLES
+#
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+AWACS_BANNER_RESET="\e[0m"
+
+# AWACS Directory tree
+AWACS_ROOT=$HOME/AWACS
+AWACS_SOURCE=$AWACS_ROOT/src
+AWACS_HOME=$AWACS_ROOT/home
+AWACS_ETC=$AWACS_ROOT/etc
+AWACS_DEVICES=$AWACS_ROOT/devices
+AWACS_PACKAGES=$AWACS_ROOT/packages
+AWACS_TEMPLATES=$AWACS_ROOT/templates
+AWACS_DEBS=$AWACS_ROOT/debs
+
+# AWACS Install Support files
+AWACS_INSTALLED_DEVICE=$AWACS_DEVICES/DEVICES
+
+# Detect architecture (x86, x86_64, aarch64, ARMv8, ARMv7)
+AWACS_HWARCH=`lscpu|grep Architecture|awk '{print $2}'`
+## Detect Operating system (Debian GNU/Linux 11 (bullseye) or Ubuntu 22.04.3 LTS)
+AWACS_OSNAME=`cat /etc/os-release|grep "PRETTY_NAME"|awk -F'"' '{print $2}'`
+## Is Platform good for install- true or false - we start with false
+AWACS_CERTIFIED="false"
+
+#
+# FUNCTIONS
+#
+
+log() {
+    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')] $1${NC}"
+}
+
+warn() {
+    echo -e "${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] WARNING: $1${NC}"
+}
+
+error() {
+    echo -e "${RED}[$(date +'%Y-%m-%d %H:%M:%S')] ERROR: $1${NC}"
+}
+
+###
+###  MAIN
+###
+
+NOUN=$1
+ACTION=$2
+PROPERNOUN=$3
+PKGSCRIPT="package_$2"
+DEVSCRIPT="device_$2"
+
+case "$1" in 
+    build )
+        source $AWACS_ROOT/build_awacs.sh $2
+        ;;
+    device-install )
+        source $AWACS_DEVICES/$2
+        ;;
+    package-install )
+        source $AWACS_PACKAGES/$2
+        ;;
+    * )
+        cat <<EOF
+
+ Usage:  AWACS [ACTION] [TARGET]
+ 
+         ACTION
+             build             build AWACS script
+             package-install   install TARGET package
+             device-install    install TARGET device
+             
+         TARGET
+             A AWACS package or device
+EOF
+;;
+esac
+
+exit 0
