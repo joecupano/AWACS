@@ -82,10 +82,10 @@ case "$1" in
         source $AWACS_ROOT/build_awacs.sh $2
         ;;
     device-install )
-        source $AWACS_DEVICES/$2
+        source $AWACS_DEVICES/$DEVSCRIPT
         ;;
     package-install )
-        source $AWACS_PACKAGES/$2
+        source $AWACS_PACKAGES/$PKGSCRIPT
         ;;
     * )
         cat <<EOF
