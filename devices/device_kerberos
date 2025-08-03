@@ -15,16 +15,16 @@ log "Installing Kerberos SDR support..."
 sudo apt-get install -y python3-pip python3-pyqt4 pyqt4-dev-tools gfortran libatlas3-base \
 libatlas-base-dev python3-dev python3-setuptools libffi6 libffi-dev python3-tk pkg-config libfreetype6-dev php7.2-cli
 sudo apt-get install -y libusb-1.0-0-dev
-sudo pip3 install --user numpy
-sudo pip3 install --user matplotlib
-sudo pip3 install --user scipy
-sudo pip3 install --user cairocffi
-sudo pip3 install --user pyapril
-sudo pip3 install --user pyargus
-sudo pip3 install --user pyqtgraph
-sudo pip3 install --user peakutils
-sudo pip3 install --user bottle
-sudo pip3 install --user paste
+pip3 install --break-system-packages numpy
+pip3 install --break-system-packages matplotlib
+pip3 install --break-system-packages scipy
+pip3 install --break-system-packages cairocffi
+pip3 install --break-system-packages pyapril
+pip3 install --break-system-packages pyargus
+pip3 install --break-system-packages pyqtgraph
+pip3 install --break-system-packages peakutils
+pip3 install --break-system-packages bottle
+pip3 install --break-system-packages paste
 
 # PACKAGE
 cd $AWACS_SOURCE
