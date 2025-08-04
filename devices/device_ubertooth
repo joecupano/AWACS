@@ -18,7 +18,7 @@ case "$1" in
     install )
         log "Installing Ubertooth support..."
         sudo apt-get install -y libusb-1.0-0-dev libbluetooth-dev 
-        sudo apt-get install -y python3-distutils python3-qtpy 
+        sudo apt-get install -y python3-setuptools python3-qtpy 
 
         ### LibBTBB Library
         cd $AWACS_SOURCE
