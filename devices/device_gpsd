@@ -6,14 +6,25 @@
 ### device_gps
 ###
 ###
-### 20250801-0100
+### 20250804-0100
 ###
 
-log "Installing GPS support..."
-
-## DEPENDENCIES
-sudo apt-get install -y gpsd gpsd-clients python3-gps chrony
-pip3 install --break-system-packages gpsd-py3
-
-sudo cp $AWACS_TEMPLATES/gpsd.conf /etc/default/gpsd
-sudo systemctl enable gpsd
+case "$1" in 
+    remove )
+        log "Removing GPS support..."
+	    sudo systemctl stop gpsd
+        sudo systemctl disable gpsd
+        sudo systemctl remove gpsd
+        sudo rm /etc/default/gpsd
+        ;;
+    install )
+        log "Installing GPS support..."
+        sudo apt-get install -y gpsd gpsd-clients python3-gps chrony
+        pip3 install --break-system-packages gpsd-py3
+        sudo cp $AWACS_TEMPLATES/gpsd.conf /etc/default/gpsd
+        sudo systemctl enable gpsd
+        ;;
+    * )
+        error "Unknown action on device_gps: $1"
+        ;;
+esac

@@ -6,29 +6,60 @@
 ### device_sdrplayold
 ###
 ###
-### 20250801-0100
+### 20250804-0100
 ###
 
-log "Installing SDRplay ..."
-sudo cp $AWACS_DEVICES/device_sdrplayold_run /usr/local/bin/device_sdrplayold_run
-sudo chmod 755 /usr/local/bin/device_sdrplayold_run
+case "$1" in 
+    install )
+        log "Installing SDRplay ..."
+        sudo cp $AWACS_DEVICES/device_sdrplayold_run /usr/local/bin/device_sdrplayold_run
+        sudo chmod 755 /usr/local/bin/device_sdrplayold_run
 
-cd $AWACS_SOURCE
-tar -xvf $AWACS_DEBS/SDRPlay_RSP_API-x86_64-3.0.7.tar.gz
-cd SDRPlay
-sudo ./install_lib.sh
+        cd $AWACS_SOURCE
+        tar -xvf $AWACS_DEBS/SDRPlay_RSP_API-x86_64-3.0.7.tar.gz
+        cd SDRPlay
+        sudo ./install_lib.sh
 
-cd $AWACS_SOURCE
-git clone https://github.com/SDRplay/RSPTCPServer
-cd RSPTCPServer
-mkdir build && cd build
-cmake .. -Wno-dev
-make -j4
-sudo make install
-sudo ldconfig
-echo " "
-echo "SDRplayuser guide can be found at ..."
-echo "https://www.sdrplay.com/docs/SDRplay_RSP_TCP_Server_Guide.pdf"
-echo " "
-
-       
+        cd $AWACS_SOURCE
+        git clone https://github.com/SDRplay/RSPTCPServer
+        cd RSPTCPServer
+        mkdir build && cd build
+        cmake .. -Wno-dev
+        make -j4
+        sudo make install
+        sudo ldconfig
+        echo " "
+        echo "SDRplayuser guide can be found at ..."
+        echo "https://www.sdrplay.com/docs/SDRplay_RSP_TCP_Server_Guide.pdf"
+        echo " "
+        ;;
+    remove )
+        log "Removing SDRplay support..."
+        sudo rm -f /usr/local/bin/device_sdrplayold_run
+        cd $AWACS_SOURCE
+        sudo rm -rf SDRPlay
+        cd $AWACS_SOURCE
+        sudo rm -rf RSPTCPServer
+        ;;
+    start )
+        log "Starting SDRplay TCP server..."
+        sudo systemctl stop sdrplay
+        sudo pkill sdrplay_apiService
+        #sudo rm -f /dev/shm/Glbl\\sdrSrv*
+        sudo systemctl start sdrplay
+        ;;
+    stop )
+        log "Stopping SDRplay TCP server..."
+        sudo systemctl stop sdrplay
+        sudo pkill sdrplay_apiService
+        ;;
+    disable )
+        log "Disable SDRplay TCP server..."
+        sudo systemctl stop sdrplay
+        sudo systemctl disable sdrplay
+        sudo pkill sdrplay_apiService
+        ;;
+    * )
+        error "Unknown action on device_sdrplayold: $1"
+        ;;
+esac

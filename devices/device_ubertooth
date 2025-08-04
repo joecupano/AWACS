@@ -6,33 +6,42 @@
 ### device_ubertooth
 ###
 ###
-### 20250801-0100
+### 20250804-0100
 ###
 
-log "Installing Ubertooth support..."
+case "$1" in 
+    remove )
+        log "Removing Ubertooth support..."
+        sudo apt-get remove --purge -y libbtbb-dev ubertooth
+        sudo apt-get autoremove -y
+        ;;
+    install )
+        log "Installing Ubertooth support..."
+        sudo apt-get install -y libusb-1.0-0-dev libbluetooth-dev 
+        sudo apt-get install -y python3-distutils python3-qtpy 
+        sudo apt-get install -y python3-setuptools
 
-## DEPENDENCIES
-sudo apt-get install -y libusb-1.0-0-dev libbluetooth-dev 
-#sudo apt-get install -y python3-distutils python3-qtpy 
-sudo apt-get install -y python3-setuptools
+        ### LibBTBB Library
+        cd $AWACS_SOURCE
+        git clone https://github.com/greatscottgadgets/libbtbb.git
+        cd libbtbb
+        mkdir build && cd build
+        cmake .. -Wno-dev
+        make -j4
+        sudo make install
+        sudo ldconfig
 
-### LibBTBB Library
-cd $AWACS_SOURCE
-git clone https://github.com/greatscottgadgets/libbtbb.git
-cd libbtbb
-mkdir build && cd build
-cmake .. -Wno-dev
-make -j4
-sudo make install
-sudo ldconfig
-
-### Ubertooth
-cd $AWACS_SOURCE
-git clone https://github.com/greatscottgadgets/ubertooth.git
-cd ubertooth/host
-mkdir build && cd build
-cmake .. -Wno-dev
-make -j4
-sudo make install
-sudo ldconfig
-  
+        ### Ubertooth
+        cd $AWACS_SOURCE
+        git clone https://github.com/greatscottgadgets/ubertooth.git
+        cd ubertooth/host
+        mkdir build && cd build
+        cmake .. -Wno-dev
+        make -j4
+        sudo make install
+        sudo ldconfig   
+        ;;
+    * )
+        error "Unknown action on device_ubertooth: $1"
+        ;;
+esac

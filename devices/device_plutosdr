@@ -6,24 +6,35 @@
 ### device_plutosdr
 ###
 ###
-### 20250801-0100
+### 20250804-0100
 ###
 
-log "AWACS Device Setup Script - PlutoSDR"
-
-## DEPENDENCIES
-sudo apt-get install -y libaio-dev libusb-1.0-0-dev libserialport-dev libavahi-client-dev libxml2-dev bison flex libcdk5-dev 
-sudo apt-get install -y python3 python3-pip python3-setuptools
-
-# INSTALL
-cd $AWACS_SOURCE
-git clone https://github.com/analogdevicesinc/libiio.git
-cd libiio
-#20230924  need to chekcout v0.25 so SoapPlutoSDR works
-git checkout v0.25
-mkdir build && cd build
-#20230830 Compile error not finding ZSTD though installed. So disable for now
-cmake .. -Wno-dev -WITH_ZSTD=OFF
-make -j4
-sudo make install
-sudo ldconfig
+case "$1" in 
+    install )
+        log "Installing PlutoSDR support..."
+        sudo apt-get install -y libaio-dev libusb-1.0-0-dev libserialport-dev libavahi-client-dev libxml2-dev bison flex libcdk5-dev 
+        sudo apt-get install -y python3 python3-pip python3-setuptools
+        cd $AWACS_SOURCE
+        git clone https://github.com/analogdevicesinc/libiio.git
+        cd libiio
+        #20230924  need to chekcout v0.25 so SoapPlutoSDR works
+        git checkout v0.25
+        mkdir build && cd build
+        #20230830 Compile error not finding ZSTD though installed. So disable for now
+        cmake .. -Wno-dev -WITH_ZSTD=OFF
+        make -j4
+        sudo make install
+        sudo ldconfig
+        ;;
+    remove )
+        log "Removing PlutoSDR support..."
+        cd $AWACS_SOURCE/libiio/build
+        sudo make uninstall
+        sudo ldconfig
+        cd $AWACS_SOURCE
+        rm -rf $AWACS_SOURCE/libiio
+        ;;
+    * )
+        error "Unknown action on device_plutosdr: $1"
+        ;;
+esac

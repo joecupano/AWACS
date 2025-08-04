@@ -6,34 +6,44 @@
 ### device_kerberos
 ###
 ###
-### 20250801-0100
+### 20250804-0100
 ###
 
-log "Installing Kerberos SDR support..."
-
-## DEPENDENCIES
-sudo apt-get install -y python3-pip python3-pyqt4 pyqt4-dev-tools gfortran libatlas3-base \
-libatlas-base-dev python3-dev python3-setuptools libffi6 libffi-dev python3-tk pkg-config libfreetype6-dev php7.2-cli
-sudo apt-get install -y libusb-1.0-0-dev
-pip3 install --break-system-packages numpy
-pip3 install --break-system-packages matplotlib
-pip3 install --break-system-packages scipy
-pip3 install --break-system-packages cairocffi
-pip3 install --break-system-packages pyapril
-pip3 install --break-system-packages pyargus
-pip3 install --break-system-packages pyqtgraph
-pip3 install --break-system-packages peakutils
-pip3 install --break-system-packages bottle
-pip3 install --break-system-packages paste
-
-# PACKAGE
-cd $AWACS_SOURCE
-git clone https://github.com/rtlsdrblog/rtl-sdr-kerberos
-cd $AWACS_SOURCE/rtl-sdr-kerberos
-mkdir build	&& cd build
-cmake ../ -Wno-dev -DINSTALL_UDEV_RULES=ON
-make -j4
-sudo make install
-sudo cp ../rtl-sdr.rules /etc/udev/rules.d/
-sudo ldconfig
-
+case "$1" in 
+    remove )
+        log "Removing Kerberos SDR support..."
+        cd $AWACS_SOURCE/rtl-sdr-kerberos/build
+        sudo make uninstall
+        sudo ldconfig
+        cd $AWACS_SOURCE
+        rm -rf $AWACS_SOURCE/rtl-sdr-kerberos
+        ;;
+    install )
+        log "Installing Kerberos SDR support..."
+        sudo apt-get install -y python3-pip python3-pyqt4 pyqt4-dev-tools gfortran libatlas3-base \
+        libatlas-base-dev python3-dev python3-setuptools libffi6 libffi-dev python3-tk pkg-config libfreetype6-dev php7.2-cli
+        sudo apt-get install -y libusb-1.0-0-dev
+        pip3 install --break-system-packages numpy
+        pip3 install --break-system-packages matplotlib
+        pip3 install --break-system-packages scipy
+        pip3 install --break-system-packages cairocffi
+        pip3 install --break-system-packages pyapril
+        pip3 install --break-system-packages pyargus
+        pip3 install --break-system-packages pyqtgraph
+        pip3 install --break-system-packages peakutils
+        pip3 install --break-system-packages bottle
+        pip3 install --break-system-packages paste
+        cd $AWACS_SOURCE
+        git clone https://github.com/rtlsdrblog/rtl-sdr-kerberos
+        cd $AWACS_SOURCE/rtl-sdr-kerberos
+        mkdir build	&& cd build
+        cmake ../ -Wno-dev -DINSTALL_UDEV_RULES=ON
+        make -j4
+        sudo make install
+        sudo cp ../rtl-sdr.rules /etc/udev/rules.d/
+        sudo ldconfig
+        ;;
+    * )
+        error "Unknown action on device_kerberos: $1"
+        ;;
+esac

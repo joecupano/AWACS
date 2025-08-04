@@ -6,20 +6,31 @@
 ### device_bladerf
 ###
 ###
-### 20250801-0100
+### 20250804-0100
 ###
 
-log "Installing bladeRF support..."
-
-## DEPENDENCIES
-sudo apt-get install -y python3-six python3-mako python3-lxml python3-lxml 
-
-## PACKAGE 
-cd $AWACS_SOURCE
-git clone https://github.com/Nuand/bladeRF.git
-cd bladeRF
-mkdir build && cd build
-cmake .. -Wno-dev
-make -j4
-sudo make install
-sudo ldconfig
+case "$1" in 
+    remove )
+        log "Removing bladeRF support..."
+	    cd $AWACS_SOURCE/bladeRF/build/host
+        sudo make uninstall
+        sudo ldconfig
+        cd $AWACS_SOURCE
+        rm -rf $AWACS_SOURCE/bladeRF
+        ;;
+    install )
+        log "Installing bladeRF support..."
+        sudo apt-get install -y python3-six python3-mako python3-lxml python3-lxml 
+        cd $AWACS_SOURCE
+        git clone https://github.com/Nuand/bladeRF.git
+        cd bladeRF
+        mkdir build && cd build
+        cmake .. -Wno-dev
+        make -j4
+        sudo make install
+        sudo ldconfig
+        ;;
+    * )
+        error "Unknown action on device_bladerf: $1"
+        ;;
+esac

@@ -6,18 +6,34 @@
 ### device_libmirisdr
 ###
 ###
-### 20250801-0100
+### 20250804-0100
 ###
 
-log "Installing SDRplay RSPx support..."
-sudo modprobe -r msi2500 msi001
-sudo cp $AWACS_TEMPLATES/blacklist_sdrplay.conf /etc/modprobe.d/blacklist_sdrplay.conf
-
-cd $AWACS_SOURCE
-git clone https://github.com/ericek111/libmirisdr-5
-cd libmirisdr-5
-mkdir build && cd build
-cmake .. -Wno-dev
-make -j4
-sudo make install
-sudo ldconfig
+case "$1" in
+    remove )
+        log "Removing SDRplay RSPx support..."
+        sudo modprobe -r msi2500 msi001
+        sudo rm /etc/modprobe.d/blacklist_sdrplay.conf
+        cd $AWACS_SOURCE/libmirisdr-5/build
+        sudo make uninstall
+        sudo ldconfig
+        cd $AWACS_SOURCE
+        rm -rf $AWACS_SOURCE/libmirisdr-5
+        ;;
+    install )
+        log "Installing SDRplay RSPx support..."
+        sudo modprobe -r msi2500 msi001
+        sudo cp $AWACS_TEMPLATES/blacklist_sdrplay.conf /etc/modprobe.d/blacklist_sdrplay.conf
+        cd $AWACS_SOURCE
+        git clone https://github.com/ericek111/libmirisdr-5
+        cd libmirisdr-5
+        mkdir build && cd build
+        cmake .. -Wno-dev
+        make -j4
+        sudo make install
+        sudo ldconfig
+        ;;
+    * )
+        error "Unknown action on device_libmirisdr: $1"
+        ;;
+esac

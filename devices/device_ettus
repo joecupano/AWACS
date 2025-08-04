@@ -6,23 +6,40 @@
 ### device_ettus
 ###
 ###
-### 20250801-0100
+### 20250804-0100
 ###
 
-log "Installing Ettus UHD support..."
+case "$1" in
+    remove )
+        log "Removing Ettus UHD support..."
 
-## DEPENDENCIES
-sudo apt-get install -y libboost-all-dev libusb-1.0-0-dev python3-mako
+        cd $AWACS_SOURCE/uhd/host/build
+        sudo make uninstall
+        sudo ldconfig
+        cd $AWACS_SOURCE
+        rm -rf $AWACS_SOURCE/uhd
+        sed -i /ettus/d $AWACS_INSTALLED
 
-## PACKAGE
-cd $AWACS_SOURCE
-git clone https://github.com/EttusResearch/uhd.git
-cd uhd
-git checkout UHD-4.6
-cd host
-mkdir build	&& cd build
-cmake .. -Wno-dev
-sudo make install
-sudo cp /usr/local/lib/uhd/utils/uhd-usrp.rules /etc/udev/rules.d/
-sudo ldconfig
-sudo uhd_images_downloader
+        echo -e "${AWACS_BANNER_COLOR}"
+        echo -e "${AWACS_BANNER_COLOR} ##   Ettus UHD Removed"
+        echo -e "${AWACS_BANNER_RESET}"
+        ;;
+    install )
+        log "Installing Ettus UHD support..."
+        sudo apt-get install -y libboost-all-dev libusb-1.0-0-dev python3-mako
+        cd $AWACS_SOURCE
+        git clone https://github.com/EttusResearch/uhd.git
+        cd uhd
+        git checkout UHD-4.6
+        cd host
+        mkdir build	&& cd build
+        cmake .. -Wno-dev
+        sudo make install
+        sudo cp /usr/local/lib/uhd/utils/uhd-usrp.rules /etc/udev/rules.d/
+        sudo ldconfig
+        sudo uhd_images_downloader
+        ;;
+    * )
+        error "Unknown action on device_ettus: $1"
+        ;;
+esac

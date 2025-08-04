@@ -6,11 +6,22 @@
 ### device_rtlsdr
 ###
 ###
-### 20250729-1400
+### 20250804-1400
 ###
 
-log "Installing RTL-SDR support..."
-sudo apt install -y rtl-sdr librtlsdr2 librtlsdr-dev
+case "$1" in 
+    remove )
+        log "Removing RTL-SDR support..."
+        sudo apt remove -y rtl-sdr librtlsdr2 librtlsdr-dev
+        ;;
+    install )
+        log "Installing RTL-SDR support..."
+        sudo apt install -y rtl-sdr librtlsdr2 librtlsdr-dev
+        ;;
+    * )
+        error "Unknown action on device_rtlsdr: $1"
+        ;;
+esac
 
 ## COMPILE OPTION
 #sudo apt-get install -y libusb-1.0-0-dev

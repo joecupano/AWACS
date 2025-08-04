@@ -6,17 +6,26 @@
 ### device_hackrf 
 ###
 ###
-### 20250801-0100
+### 20250804-0100
 ###
 
-log "Installing HackRF support..."
-sudo apt-get install -y libusb-1.0-0-dev libfftw3-dev
-
-cd $AWACS_SOURCE
-git clone https://github.com/mossmann/hackrf.git
-cd hackrf && cd host
-mkdir build && cd build
-cmake .. -Wno-dev
-make
-sudo make install
-sudo ldconfig
+case "$1" in 
+    remove )
+        error "Not an available action on device_hackrf: $1"
+        ;;
+    install )
+        log "Installing HackRF support..."
+        sudo apt-get install -y libusb-1.0-0-dev libfftw3-dev
+        cd $AWACS_SOURCE
+        git clone https://github.com/mossmann/hackrf.git
+        cd hackrf && cd host
+        mkdir build && cd build
+        cmake .. -Wno-dev
+        make
+        sudo make install
+        sudo ldconfig
+        ;;
+    * )
+        error "Unknown action on device_hackrf: $1"
+        ;;
+esac
