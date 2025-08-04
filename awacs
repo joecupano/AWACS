@@ -3,20 +3,22 @@
 ###
 ### AWACS
 ###
-###  20250803-0900
+###  20250803-2300
 ###
 
 ###
-### Usage:  AWACS [ACTION] [TARGET]
+### Usage:  AWACS [CATEGORY] [ACTION] [TARGET]
 ### 
+###         CATEGORY
+###             device    signal source
+###             package   AWACS package
+###
 ###         ACTION
-###             build             build AWACS script
-###             package-install   install TARGET package
-###             device-install    install TARGET device
+###             install   install TARGET
+###             remove    remove TARGET
 ###             
 ###         TARGET
 ###             A AWACS package or device
-###
 ###
 
 
@@ -71,7 +73,6 @@ error() {
 ###  MAIN
 ###
 
-NOUN=$1
 ACTION=$2
 PROPERNOUN=$3
 PKGSCRIPT="package_$2"
@@ -79,23 +80,43 @@ DEVSCRIPT="device_$2"
 
 case "$1" in 
     build )
-        source $AWACS_ROOT/build_awacs.sh $2
+        if [ "$3" = "kismet" ]; then
+            source $AWACS_ROOT/build_awacs.sh kismet
+        elif [ "$3" = "openwebrx" ]; then
+            source $AWACS_ROOT/build_awacs.sh openwebrx
+        else
+            source $AWACS_ROOT/build_awacs.sh
+        fi
         ;;
-    device-install )
-        source $AWACS_DEVICES/$DEVSCRIPT
+    device )
+        if [ "$3" = "remove" ]; then
+            source $AWACS_DEVICES/$DEVSCRIPT remove
+        fi
+        if [ "$3" = "install" ]; then
+            source $AWACS_DEVICES/$DEVSCRIPT install
+        fi
         ;;
-    package-install )
-        source $AWACS_PACKAGES/$PKGSCRIPT
+    package )
+        if [ "$3" = "remove" ]; then
+            source $AWACS_PACKAGES/$PKGSCRIPT remove
+        fi
+        if [ "$3" = "install" ]; then
+            source $AWACS_PACKAGES/$PKGSCRIPT install
+        fi
         ;;
+
     * )
         cat <<EOF
 
- Usage:  AWACS [ACTION] [TARGET]
+ Usage:  AWACS [CATEGORY] [ACTION] [TARGET]
  
+         CATEGORY
+             device    signal source
+             package   AWACS package
+
          ACTION
-             build             build AWACS script
-             package-install   install TARGET package
-             device-install    install TARGET device
+             install   install TARGET
+             remove    remove TARGET
              
          TARGET
              A AWACS package or device
