@@ -130,67 +130,67 @@ sudo usermod -a -G plugdev $USER
 # Install bladeRF
 if grep -q "bladerf,yes" "$AWACS_INSTALLED_DEVICE"; then
     log "Installing bladeRF support..."
-    source $AWACS_DEVICES/device_bladerf
+    source $AWACS_DEVICES/device_bladerf install
 fi
 
 # Install Ettus UHD
 if grep -q "ettus,yes" "$AWACS_INSTALLED_DEVICE"; then
     log "Installing Ettus UHD support..."
-    source $AWACS_DEVICES/device_ettus
+    source $AWACS_DEVICES/device_ettus install
 fi
 
 # Install GPS
 if grep -q "gpsd,yes" "$AWACS_INSTALLED_DEVICE"; then
     log "Installing GPS support..."
-    source $AWACS_DEVICES/device_gpsd
+    source $AWACS_DEVICES/device_gpsd install
 fi
 
 # Install HackRF
 if grep -q "hackrf,yes" "$AWACS_INSTALLED_DEVICE"; then
     log "Installing HackRF support..."
-    source $AWACS_DEVICES/device_hackrf
+    source $AWACS_DEVICES/device_hackrf install
 fi
 
 # Install LimeSDR
 if grep -q "limesuite,yes" "$AWACS_INSTALLED_DEVICE"; then
     log "Installing LimeSDR support..."
-    source $AWACS_DEVICES/device_limesuite
+    source $AWACS_DEVICES/device_limesuite install
 fi
 
 # Install Pineapple Nano
 if grep -q "pineapplenano,yes" "$AWACS_INSTALLED_DEVICE"; then
     log "Installing Pineapple Nano support..."
-    source $AWACS_DEVICES/device_pineapple_nano
+    source $AWACS_DEVICES/device_pineapple_nano install
 fi
 
 # Install PlutoSDR
 if grep -q "plutosdr,yes" "$AWACS_INSTALLED_DEVICE"; then
     log "Installing PlutoSDR support..."
-    source $AWACS_DEVICES/device_plutosdr
+    source $AWACS_DEVICES/device_plutosdr install
 fi
 
 # Install RTLSDR
 if grep -q "rtlsdr,yes" "$AWACS_INSTALLED_DEVICE"; then
     log "Installing RTL-SDR support..."
-    source $AWACS_DEVICES/device_rtlsdr
+    source $AWACS_DEVICES/device_rtlsdr install
 fi
 
 # Install SDRPlay
 if grep -q "libmirisdr,yes" "$AWACS_INSTALLED_DEVICE"; then
     log "Installing SDRPlay support..."
-    source $AWACS_DEVICES/device_libmirisdr
+    source $AWACS_DEVICES/device_libmirisdr install
 fi
 
 # Install Ubertooth
 if grep -q "ubertooth,yes" "$AWACS_INSTALLED_DEVICE"; then
     log "Installing Ubertooth support..."
-    source $AWACS_DEVICES/device_ubertooth
+    source $AWACS_DEVICES/device_ubertooth install
 fi
 
 # Install ESP32
 #if grep esp32,yes "$AWACS_INSTALLED_DEVICE"; then
 #    log "Installing ESP32 support..."
-#    source $AWACS_DEVICES/device_esp32
+#    source $AWACS_DEVICES/device_esp32 install
 #fi
 
 #
@@ -200,18 +200,18 @@ fi
 log "Installing packages..."
 
 # Install RTLAMR
-source $AWACS_PACKAGES/package_rtlamr
+source $AWACS_PACKAGES/package_rtlamr install
 
 # Install OpenWebRX
 if [ "$1" == "openwebrx" ]; then
     log "Installing OpenWebRX ..."
-    source $AWACS_PACKAGES/package_openwebrx
+    source $AWACS_PACKAGES/package_openwebrx install
 fi
 
 # Install Kismet
 if [ "$1" == "kismet" ]; then
     log "Installing Kismet ..."
-    source $AWACS_PACKAGES/package_kismet
+    source $AWACS_PACKAGES/package_kismet install
 fi
 
 
