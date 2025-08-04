@@ -9,6 +9,11 @@
 ### 20250804-0100
 ###
 
+###
+### Note: If you do not want to compile, you can use the repo packages instead
+### sudo apt install ubertooth libubertooth-dev ubertooth-firmware
+### 
+
 case "$1" in 
     remove )
         log "Removing Ubertooth support..."
